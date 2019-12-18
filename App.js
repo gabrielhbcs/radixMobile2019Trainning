@@ -1,7 +1,11 @@
-import React, {Component} from 'react'; // 1
-import {Text, View, StyleSheet, TextInput, Button, Alert, FlatList, Image, TouchableHighlight} from 'react-native';
+import React, {Component} from 'react'; 
+import {Text, View, StyleSheet, TextInput, Button, Alert, FlatList, Image, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, Vibration} from 'react-native';
 import noimg from './imagens/noimg.png';
+import heart from './imagens/heart.png'
 import api from './service/api';
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+
 
 const Card = ({item}) => (<View style={{flex: 1, flexDirection: 'row'}}>
 <Image
@@ -16,14 +20,12 @@ const Card = ({item}) => (<View style={{flex: 1, flexDirection: 'row'}}>
 </View>
 </View>);
 
-// 3
-export default class App extends Component {
+
+
+class App extends Component {
   state = {
     searchText: '',
     searchResults: null,
-  }
-  mostrarResultado = (nomeSerie) => {
-    alert("resultados para\n"+nomeSerie)
   }
   submitSearch = async () => { // 1
     if (this.state.searchText != '') { // 2
@@ -42,12 +44,13 @@ export default class App extends Component {
       <View style={styles.screen}>
         <View style={styles.search}>
           <TextInput
-    placeholder={'Procure uma série'}
-    alignItems={'center'}
-    style={styles.input}
-    onChangeText={(text) => this.setState({ searchText: text })}
-    onSubmitEditing={() => this.submitSearch()}
-  /> 
+            placeholder={'Procure uma série'}
+            alignItems={'center'}
+            style={styles.input}
+            onChangeText={(text) => this.setState({ searchText: text })}
+            onSubmitEditing={() => this.submitSearch()}
+            />
+            <TouchableOpacity onPress={() => Vibration.vibrate(200)}><Image source={heart}/></TouchableOpacity>
         </View>
           <View style={{backgroundColor: 'rgb(240,240,240)'}}>          
             <Text style={{alignSelf: "flex-start", fontSize: 30, fontWeight: 'bold'}}>Resultados:</Text>
@@ -56,10 +59,10 @@ export default class App extends Component {
           
             <FlatList style={{paddingHorizontal: 5}}
               data = {this.state.searchResults}
-              renderItem = {({item, index}) => <TouchableHighlight onPress={() => this.mostrarResultado(item.show.name)}>
-                                                <Card item={item} key={index} />
-                                              </TouchableHighlight>}
-              keyExtractor = {(item,index) => index}/>
+              renderItem = {({item, index}) =>  <TouchableOpacity onPress={() => this.props.navigation.navigate('Details', {item: item})}>
+                                                  <Card item={item} key={index} />
+                                                </TouchableOpacity>}
+              keyExtractor = {(item,index) => `${index}`}/>
           
         </View>
       </View>
@@ -67,24 +70,52 @@ export default class App extends Component {
   }
 }
 
-// 5
+class DetailsScreen extends Component {
+  
+  render() {
+    const item = this.props.navigation.getParam("item");
+    return (
+      <View style={{padding: 5, flexWrap: "wrap", alignItems: 'center'}}>
+        <View>
+          <Image
+            onLoadStart={()=>console.log(`baixando... ${item.show.name}`)}
+            onLoadEnd={()=>console.log(`finalizado ${item.show.name}`)}
+            style = {styles.imageDetail}
+            source={!item.show.image ? noimg : {uri: (item.show.image.original ) }}
+          />
+        </View>
+        <View>
+          <Text style={{fontSize: 23}}>{item.show.name}</Text>
+          <Text style={{fontSize: 15}}>{item.show.genres.join(", ")}</Text>
+          <Text style={{fontSize: 12}}>{item.show.summary}</Text>
+        </View>
+      </View>
+    );
+  }
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     flexDirection: 'column',
   },
   search: {
-    flex: 1,
-    width: 300,    
+    flex: 1,    
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
     
+  },
+  imageDetail:{
+    resizeMode: "contain",
+    alignSelf: 'center',
+    width: 320,
+    height: 200,
   },
   imageResultado:{
     width: 80,
     height: 120,
-    // resizeMode: "contain",
+    resizeMode: "contain",
     borderRadius: 10,
     marginRight: 5
   },
@@ -131,3 +162,23 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
 });
+
+const AppStack = createStackNavigator({
+  Home: {
+    screen: App,
+    navigationOptions: {
+      header: null
+    }
+  },
+  Details: {
+    screen: DetailsScreen,
+    navigationOptions: {
+      title: "Detalhes da série",
+    }
+  }
+},
+{
+  initialRoute: 'Home',
+});
+
+export default createAppContainer(AppStack);
