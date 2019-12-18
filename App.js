@@ -1,5 +1,5 @@
 import React, {Component} from 'react'; // 1
-import {Text, View, StyleSheet, TextInput, Button, Alert, FlatList, Image} from 'react-native';
+import {Text, View, StyleSheet, TextInput, Button, Alert, FlatList, Image, TouchableHighlight} from 'react-native';
 import noimg from './imagens/noimg.png';
 import api from './service/api';
 
@@ -21,6 +21,9 @@ export default class App extends Component {
   state = {
     searchText: '',
     searchResults: null,
+  }
+  mostrarResultado = (nomeSerie) => {
+    alert("resultados para\n"+nomeSerie)
   }
   submitSearch = async () => { // 1
     if (this.state.searchText != '') { // 2
@@ -46,14 +49,18 @@ export default class App extends Component {
     onSubmitEditing={() => this.submitSearch()}
   /> 
         </View>
-        <View style={{backgroundColor: 'rgb(240,240,240)'}}>          
-        <Text style={{alignSelf: "flex-start", fontSize: 30, fontWeight: 'bold'}}>Resultados:</Text>
-        </View>
+          <View style={{backgroundColor: 'rgb(240,240,240)'}}>          
+            <Text style={{alignSelf: "flex-start", fontSize: 30, fontWeight: 'bold'}}>Resultados:</Text>
+          </View>
         <View style={styles.results}>
-          <FlatList style={{paddingHorizontal: 5}}
-            data = {this.state.searchResults}
-            renderItem = {({item, index}) => <Card item={item} key={index} />}
-            keyExtractor = {(item,index) => index}/>
+          
+            <FlatList style={{paddingHorizontal: 5}}
+              data = {this.state.searchResults}
+              renderItem = {({item, index}) => <TouchableHighlight onPress={() => this.mostrarResultado(item.show.name)}>
+                                                <Card item={item} key={index} />
+                                              </TouchableHighlight>}
+              keyExtractor = {(item,index) => index}/>
+          
         </View>
       </View>
     );
