@@ -50,7 +50,8 @@ class App extends Component {
             onChangeText={(text) => this.setState({ searchText: text })}
             onSubmitEditing={() => this.submitSearch()}
             />
-            <TouchableOpacity onPress={() => Vibration.vibrate(200)}><Image source={heart}/></TouchableOpacity>
+             {/* pattern funciona assim: para x, vibra x, para x ...... nesse caso: para 100ms, vibra 300ms, para 200ms...... */}
+            <TouchableOpacity onPress={() => Vibration.vibrate([100, 300, 200, 100, 150, 100, 150, 100, 200, 200, 500, 150, 300, 150])}><Image source={heart}/></TouchableOpacity>
         </View>
           <View style={{backgroundColor: 'rgb(240,240,240)'}}>          
             <Text style={{alignSelf: "flex-start", fontSize: 30, fontWeight: 'bold'}}>Resultados:</Text>
